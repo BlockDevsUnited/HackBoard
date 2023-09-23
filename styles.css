@@ -3,18 +3,16 @@ body {
     padding: 2rem;
     color: orange;
     background-color: black;
-
 }
 
 .countdown {
     padding: 1rem;
     text-align: center;
     margin-bottom: 2rem;
-        color: orange;
-
+    color: orange;
 }
 
-button{
+button {
     margin-top: 1%;
     color: orange;
     font-size: larger;
@@ -41,7 +39,7 @@ table {
 }
 
 table, th, td {
-    border: 1px solid #333;
+    border: 1px solid black;
 }
 
 th, td {
@@ -49,3 +47,15 @@ th, td {
     text-align: left;
 }
 
+/* Additional styles for CoinMarketCap style table */
+#TokenRegistry {
+    font-size: 0.9rem;
+}
+
+#TokenRegistry td, #TokenRegistry th {
+    padding: 0.7rem 0.5rem;
+}
+
+#TokenRegistry td {
+    font-weight: 500;
+}

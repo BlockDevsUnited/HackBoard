@@ -3,71 +3,51 @@ pragma solidity 0.8.19;
 contract HackBoardRegistry{
     address public HackBoardAdmin;
     uint256[] public AllTeams;
-    address[] public AllUsers;
     uint256 public TeamIncrement;
 
     constructor(){
         HackBoardAdmin = 0xc932b3a342658A2d3dF79E4661f29DfF6D7e93Ce;
     }
-
-    mapping(address => uint256) public Users;
-    mapping(uint256 => HackBoardTeam) public Teams;
-
-    struct User{
-        bool HasTeam;
-        uint256 TeamID;
-    }
     
-    struct HackBoardTeam{
-        address Admin;
-        string TeamName;
-        string ShortDescription;
-        string Discord;
-        string MainBountyTarget;
-        address[] TeamMembers;
-        bool InterestedInPredictionMarket;
+    struct Team{
+        string name;
+        string description;
+        string discord;
+        string mainBountyTarget;
+        bool interestedInPredictionMarket;
+        bool pledgedToDistributePrize;
     }
 
-    function OnboardNewTeam(string memory TeamName, string memory ShortDescription, string memory Discord, string memory MainBountyTarget, address[] memory CurrentMembers, bool InterestedInPredictionMarket) public returns(string memory TeamCode) {
-        require(Users[msg.sender].HasTeam == false);
-        uint256 TeamID = TeamIncrement;
-        TeamIncrement++;
+    mapping (address=>Team) teams;
+    address[] teamList;
 
-        Users[msg.sender].HasTeam = true;
-        Users[msg.sender].TeamID = TeamID;
+    function RegisterTeam(string memory name, string memory description, string memory discord, string memory mainBountyTarget, bool interestedInPredictionMarket, bool pledgedToDistributePrize) public {
+        require(!teamAlreadyCreated(msg.sender));
 
-        Teams[TeamID] = HackBoardTeam(msg.sender, TeamName, ShortDescription, Discord, MainBountyTarget, CurrentMembers, InterestedInPredictionMarket);
-
-        for(uint256 i = 0; i < CurrentMembers.length; i++){
-            User[CurrentMembers[i]].HasTeam = true;
-            User[CurrentMembers[i]].TeamID = TeamID;
-        }
+        teams[msg.sender] = Team(name, description, discord, mainBountyTarget, interestedInPredictionMarket, pledgedToDistributePrize);
         
-        AllUsers.push(msg.sender);
-        AllTeams.push(TeamID);
-        return TeamID;
+        teamList.push(msg.sender);
     }
 
-    function AddTeamMember(uint256 TeamID, address[] NewMembers) public {
-        require(Teams[TeamID].Admin == msg.sender);
-        Teams[TeamID].TeamMembers.push(NewMember);
-
-        for(uint256 i = 0; i < NewMembers.length; i++){
-            User[NewMembers[i]].HasTeam = true;
-            User[NewMembers[i]].TeamID = TeamID;
-        }
+    function teamAlreadyCreated(address _address) public view returns (bool) {
+        return bytes(teams[_address].name).length > 0;
     }
 
-    function GetTeamInfo(uint256 TeamID) public returns(HackBoardTeam memory){
-        return Teams[TeamID];
+    // function AddTeamMember(uint256 TeamID, address[] NewMembers) public {
+    //     require(Teams[TeamID].Admin == msg.sender);
+    //     Teams[TeamID].TeamMembers.push(NewMember);
+
+    //     for(uint256 i = 0; i < NewMembers.length; i++){
+    //         User[NewMembers[i]].HasTeam = true;
+    //         User[NewMembers[i]].TeamID = TeamID;
+    //     }
+    // }
+
+    function GetTeamInfo(uint256 TeamID) public view returns(Team memory){
+        return teams[teamList[TeamID]];
     }
 
-    function GetUserInfo(address _User) public returns(User memory){
-        return(Users[User]);
+    function updateName() public {
+        
     }
-
-    function GetAllTeams() public returns(uint256[] memory){
-        return AllTeams;
-    }
-
 }

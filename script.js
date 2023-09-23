@@ -76,11 +76,14 @@ function insertDataIntoTable(data) {
 
     const tr = document.createElement('tbody');
     tr.innerHTML = `<tr>
+        <td></td>
         <td>${teamName}</td>
-        <td>${description}</td>
-        <td><a style="color: orange;" href="${contactLink}">Discord</a></td>
-        <td>${interestInPredictionMarket}</td>
-        <td>${mainSponsorPrizeTarget}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
         </tr>
     `;
 
@@ -156,3 +159,30 @@ document.addEventListener("DOMContentLoaded", function() {
     // Update the countdown every second
     setInterval(updateCountdown, 1000);
 });
+
+
+// function insertDataIntoTable(data) {
+//     // Add console logs to debug the data
+
+//     const teamName = data[1];
+//     const description = data[2];
+//     const contactLink = data[3];
+//     const interestInPredictionMarket = data[6] ? "Yes" : "No";
+//     const mainSponsorPrizeTarget = data[4];
+
+//     console.log(teamName, description, contactLink, interestInPredictionMarket, mainSponsorPrizeTarget);
+
+//     const tbody = document.getElementById('Registry');
+
+//     const tr = document.createElement('tbody');
+//     tr.innerHTML = `<tr>
+//         <td>${teamName}</td>
+//         <td>${description}</td>
+//         <td><a style="color: orange;" href="${contactLink}">Discord</a></td>
+//         <td>${interestInPredictionMarket}</td>
+//         <td>${mainSponsorPrizeTarget}</td>
+//         </tr>
+//     `;
+
+//     tbody.appendChild(tr);
+// }
