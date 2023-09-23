@@ -3,10 +3,9 @@ pragma solidity 0.8.19;
 contract HackBoardRegistry{
     address public HackBoardAdmin;
     uint256[] public AllTeams;
-    uint256 public TeamIncrement;
 
     constructor(){
-        HackBoardAdmin = 0xc932b3a342658A2d3dF79E4661f29DfF6D7e93Ce;
+        HackBoardAdmin = msg.sender;
 
     }
     
@@ -24,7 +23,7 @@ contract HackBoardRegistry{
     address[] public teamList;
     address[] public tokenList;
 
-    function RegisterTeam(string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket, bool pledgedToDistributePrize, string memory tokenName, string memory tokenSymbol) public {
+    function RegisterTeam(string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket, bool pledgedToDistributePrize, string memory tokenSymbol) public {
         require(!teamCreated(msg.sender));
 
         address teamToken = address(new Token(string(abi.encodePacked(name, " Coin")), tokenSymbol));
@@ -36,15 +35,15 @@ contract HackBoardRegistry{
         teamList.push(msg.sender);
     }
 
-    function registerTeamAdmin(address team, string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket) public {
-        require(msg.sender==HackBoardAdmin);
+    function importOldTeam(address team, string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket) public {
+        require(msg.sender==HackBoardAdmin, "not admin");
         address teamToken = address(new Token(string(abi.encodePacked(name, " Coin")), name));
 
-        teams[msg.sender] = Team(name, description, discord, bountyTargets, teamToken, interestedInPredictionMarket, false);
+        teams[team] = Team(name, description, discord, bountyTargets, teamToken, interestedInPredictionMarket, false);
         
         tokenList.push(teamToken); //For easy access on the frontend
 
-        teamList.push(msg.sender);
+        teamList.push(team);
     }
 
     function teamCreated(address _address) public view returns (bool) {
