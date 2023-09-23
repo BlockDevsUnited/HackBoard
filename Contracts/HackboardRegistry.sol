@@ -7,49 +7,50 @@ contract HackBoardRegistry{
 
     constructor(){
         HackBoardAdmin = 0xc932b3a342658A2d3dF79E4661f29DfF6D7e93Ce;
+
     }
     
     struct Team{
         string name;
         string description;
         string discord;
-        string mainBountyTarget;
+        string bountyTargets;
+        address teamToken;
         bool interest;
         bool pledge;
     }
 
-    mapping (address=>Team) teams;
-    address[] teamList;
+    mapping (address=>Team) public teams;
+    address[] public teamList;
+    address[] public tokenList;
 
-    function RegisterTeam(string memory name, string memory description, string memory discord, string memory mainBountyTarget, bool interestedInPredictionMarket, bool pledgedToDistributePrize, string memory tokenName, string memory tokenSymbol) public {
+    function RegisterTeam(string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket, bool pledgedToDistributePrize, string memory tokenName, string memory tokenSymbol) public {
         require(!teamCreated(msg.sender));
 
-        teams[msg.sender] = Team(name, description, discord, mainBountyTarget, interestedInPredictionMarket, pledgedToDistributePrize);
+        address teamToken = address(new Token(string(abi.encodePacked(name, " Coin")), tokenSymbol));
+
+        teams[msg.sender] = Team(name, description, discord, bountyTargets, teamToken, interestedInPredictionMarket, pledgedToDistributePrize);
         
+        tokenList.push(teamToken); //For easy access on the frontend
+
         teamList.push(msg.sender);
     }
 
-    function deployTeamToken(address teamOwner) public {
+    function registerTeamAdmin(address team, string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket) public {
+        require(msg.sender==HackBoardAdmin);
+        address teamToken = address(new Token(string(abi.encodePacked(name, " Coin")), name));
 
+        teams[msg.sender] = Team(name, description, discord, bountyTargets, teamToken, interestedInPredictionMarket, false);
+        
+        tokenList.push(teamToken); //For easy access on the frontend
+
+        teamList.push(msg.sender);
     }
 
     function teamCreated(address _address) public view returns (bool) {
         return bytes(teams[_address].name).length > 0;
     }
 
-    // function AddTeamMember(uint256 TeamID, address[] NewMembers) public {
-    //     require(Teams[TeamID].Admin == msg.sender);
-    //     Teams[TeamID].TeamMembers.push(NewMember);
-
-    //     for(uint256 i = 0; i < NewMembers.length; i++){
-    //         User[NewMembers[i]].HasTeam = true;
-    //         User[NewMembers[i]].TeamID = TeamID;
-    //     }
-    // }
-
-    function GetTeamInfo(uint256 TeamID) public view returns(Team memory){
-        return teams[teamList[TeamID]];
-    }
 
     function updateName(string memory _name) public {
         require(teamCreated(msg.sender));
@@ -78,6 +79,10 @@ contract HackBoardRegistry{
         require(teamCreated(msg.sender));
         teams[msg.sender].pledge = _pledge;
     }
+
+    function GetTeamInfo(uint256 TeamID) public view returns(Team memory){
+        return teams[teamList[TeamID]];
+    }
 }
 
 
@@ -104,8 +109,7 @@ contract Token {
         name = _name;
         symbol = _symbol;
         decimals = 18;
-        Mint(tx.origin, totalSupply*100/99);
-        Mint(0x92a0925C3c08C12e6e2185595FF94a49c1dfB5fB, totalSupply*1/100);
+        Mint(tx.origin, totalSupply);
     }
     
     
