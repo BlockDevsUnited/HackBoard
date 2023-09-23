@@ -1,3 +1,23 @@
+pragma solidity 0.8.19;
+
+interface IUniswapV2Factory {
+    function createPair(address tokenA, address tokenB) external returns (address pair);
+}
+
+interface IUniswapV2Router02 {
+        function WETH() external pure returns (address);
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint amountADesired,
+        uint amountBDesired,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external payable returns (uint amountA, uint amountB, uint liquidity);
+    // ... (other functions from the router interface) ...
+}
 
 contract HackBoardRegistry{
     address private constant FACTORY_ADDRESS = 0xA818b4F111Ccac7AA31D0BCc0806d64F2E0737D7; // Uniswap V2 Factory Address
@@ -21,7 +41,30 @@ contract HackBoardRegistry{
         bool willContinue;
     }
 
-
+function createUniswapPair(address _token, uint amount) internal {
+    IUniswapV2Factory factory = IUniswapV2Factory(FACTORY_ADDRESS);
+    
+    address WETH = IUniswapV2Router02(ROUTER_ADDRESS).WETH(); // Fetch WETH address from the router
+    address pair = factory.createPair(_token, WETH); // Create a pair with WETH, not the router address
+    pairs[_token=pair];
+    
+    IUniswapV2Router02 router = IUniswapV2Router02(ROUTER_ADDRESS);
+    
+    // Assuming the Token interface has the approve function
+    Token(_token).approve(ROUTER_ADDRESS, amount);
+    
+    // Use addLiquidityETH for adding liquidity to a token-ETH pair
+    router.addLiquidity(
+        _token,
+        WETH,
+        amount,
+        amount/10000,
+        amount * 80 / 100,
+        amount * 80 / 100*10000,
+        address(this),
+        block.timestamp + 15 minutes
+    );
+}
 
 
     mapping (address=>Team) public teams;
@@ -43,6 +86,8 @@ contract HackBoardRegistry{
         tokenList.push(teamToken); //For easy access on the frontend
 
         teamList.push(msg.sender);
+
+        createUniswapPair(teamToken, 1000000e18);
     }
 
     function importOldTeam(address team, string memory name, string memory description, string memory discord, string memory bountyTargets, bool interestedInPredictionMarket, bool _willContinue) public {
@@ -120,7 +165,9 @@ contract Token {
         name = _name;
         symbol = _symbol;
         decimals = 18;
-        Mint(teamAddress, 1000000e18);
+        Mint(teamAddress, 1000000e18*99/100);
+        Mint(msg.sender, 1000000e18*1/100);
+
     }
     
 

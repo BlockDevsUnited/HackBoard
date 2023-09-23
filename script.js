@@ -649,12 +649,35 @@ let erc20ABI = [
 	}
 ]
 
-Login();
+const pairAbi = [
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "getReserves",
+        "outputs": [
+            {
+                "internalType": "uint112",
+                "name": "_reserve0",
+                "type": "uint112"
+            },
+            {
+                "internalType": "uint112",
+                "name": "_reserve1",
+                "type": "uint112"
+            },
+            {
+                "internalType": "uint32",
+                "name": "_blockTimestampLast",
+                "type": "uint32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
 
-
-
-
-let contractAddress = "0x9E57400BC560b98027BdD93651682368ED98a74f"
+let contractAddress = "0x6Bf1D5D37c4b0D8Bb4DeDc7d7B9440BC09206643"
 let provider;
 
 let signer
@@ -698,90 +721,112 @@ async function GetTeamInfo(teamID) {
     return JSON.parse(JSON.stringify(teamInfo))
 }
 
-async function GetAllTeamInfoToConsole(){
-    let TeamInfos = [];
-    let length = await contract.teamListLength()
-    for (let i = 0; i < length; i++) {
-        TeamInfos.push(await GetTeamInfo(i));
+    async function GetAllTeamInfoToConsole(){
+        let TeamInfos = [];
+        let length = await contract.teamListLength()
+        console.log("start")
+        for (let i = 0; i < 1; i++) {
+            console.log(i)
+            TeamInfos.push(await GetTeamInfo(i));
+        }
+        console.log(TeamInfos)
+        return(TeamInfos)
     }
-    console.log(TeamInfos)
-    return(TeamInfos)
-}
 
-async function insertDataIntoTable(data) {
-    // Add console logs to debug the data
+    async function insertDataIntoTable(data) {
+        // Add console logs to debug the data
 
-    const teamName = data[0];
-    let tokenAddress = data[4]
-    let token = new ethers.Contract(tokenAddress, erc20ABI, signer);
-    let symbol = await token.symbol()
+        const teamName = data[0];
+        let tokenAddress = data[4]
+        let token = new ethers.Contract(tokenAddress, erc20ABI, signer);
+        console.log(tokenAddress)
+        let symbol = await token.symbol()
+        console.log("price")
+        let price = await getTokenPrice(tokenAddress)
+        console.log("price done")
 
-    const description = data[2];
-    const contactLink = data[3];
-    const interestInPredictionMarket = data[6] ? "Yes" : "No";
-    const mainSponsorPrizeTarget = data[4];
+        const description = data[2];
+        const contactLink = data[3];
+        const interestInPredictionMarket = data[6] ? "Yes" : "No";
+        const mainSponsorPrizeTarget = data[4];
 
-    console.log(teamName, description, contactLink, interestInPredictionMarket, mainSponsorPrizeTarget);
+        console.log(teamName, description, contactLink, interestInPredictionMarket, mainSponsorPrizeTarget);
 
-    const tbody = document.getElementById('Registry');
+        const tbody = document.getElementById('Registry');
 
-    const tr = document.createElement('tbody');
-    tr.innerHTML = `<tr>
-        <td></td>
-        <td>${teamName}</td>
-        <td>${symbol}</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        </tr>
-    `;
+        const tr = document.createElement('tbody');
+        tr.innerHTML = `<tr>
+            <td></td>
+            <td>${teamName}</td>
+            <td>${symbol}</td>
+            <td>${price}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            </tr>
+        `;
 
-    tbody.appendChild(tr);
-}
-
-async function addGnosisChainToMetaMask() {
-    const chainId = 100;
-    const rpcUrl = 'https://rpc.ankr.com/gnosis';
-    const currencySymbol = 'XDAI';
-    const explorerUrl = 'https://gnosisscan.io/';
-  
-    try {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [
-          {
-            chainId: `0x${chainId.toString(16)}`,
-            chainName: 'Gnosis Chain',
-            nativeCurrency: {
-              name: currencySymbol,
-              symbol: currencySymbol,
-              decimals: 18,
-            },
-            rpcUrls: [rpcUrl],
-            blockExplorerUrls: [explorerUrl],
-          },
-        ],
-      });
-  
-      console.log('Gnosis Chain added to MetaMask!');
-    } catch (error) {
-      console.error('Error adding Gnosis Chain to MetaMask:', error);
+        tbody.appendChild(tr);
     }
-  }
 
-async function populateTableWithTeamInfo() {
+    async function addGnosisChainToMetaMask() {
+        const chainId = 100;
+        const rpcUrl = 'https://rpc.ankr.com/gnosis';
+        const currencySymbol = 'XDAI';
+        const explorerUrl = 'https://gnosisscan.io/';
     
-        const teamData = await GetAllTeamInfoToConsole();
-        console.log(teamData);
-        for (let i = 0; i < teamData.length; i++){
-            if(i != 9){
-            await insertDataIntoTable(teamData[i]);
+        try {
+        await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+            {
+                chainId: `0x${chainId.toString(16)}`,
+                chainName: 'Gnosis Chain',
+                nativeCurrency: {
+                name: currencySymbol,
+                symbol: currencySymbol,
+                decimals: 18,
+                },
+                rpcUrls: [rpcUrl],
+                blockExplorerUrls: [explorerUrl],
+            },
+            ],
+        });
+    
+        console.log('Gnosis Chain added to MetaMask!');
+        } catch (error) {
+        console.error('Error adding Gnosis Chain to MetaMask:', error);
         }
-        }
+    }
+
+    async function populateTableWithTeamInfo() {
+        
+            const teamData = await GetAllTeamInfoToConsole();
+            console.log(teamData);
+            for (let i = 0; i < 1; i++){
+                console.log("populate " + i)
+                    await insertDataIntoTable(teamData[i]);
+                }
         
     
+}
+
+async function getTokenPrice(pairAddress) {
+    const pairContract = new ethers.Contract(pairAddress, pairAbi, provider);
+    console.log(pairContract)
+    // Fetch reserves
+    const [reserve0, reserve1] = await pairContract.getReserves();
+    console.log(reserve0,reserve1)
+    let x = reserve1*1000000000000000000n
+
+    let y = x/reserve0
+
+    let xdaiprice = ethers.formatEther(y)
+
+    // Calculate the price (assuming token0 is ETH and token1 is the desired token)
+    // Price = reserve0 (ETH) / reserve1 (TOKEN)
+    return xdaiprice
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -810,30 +855,3 @@ document.addEventListener("DOMContentLoaded", function() {
     // Update the countdown every second
     setInterval(updateCountdown, 1000);
 });
-
-
-// function insertDataIntoTable(data) {
-//     // Add console logs to debug the data
-
-//     const teamName = data[1];
-//     const description = data[2];
-//     const contactLink = data[3];
-//     const interestInPredictionMarket = data[6] ? "Yes" : "No";
-//     const mainSponsorPrizeTarget = data[4];
-
-//     console.log(teamName, description, contactLink, interestInPredictionMarket, mainSponsorPrizeTarget);
-
-//     const tbody = document.getElementById('Registry');
-
-//     const tr = document.createElement('tbody');
-//     tr.innerHTML = `<tr>
-//         <td>${teamName}</td>
-//         <td>${description}</td>
-//         <td><a style="color: orange;" href="${contactLink}">Discord</a></td>
-//         <td>${interestInPredictionMarket}</td>
-//         <td>${mainSponsorPrizeTarget}</td>
-//         </tr>
-//     `;
-
-//     tbody.appendChild(tr);
-// }
