@@ -356,6 +356,11 @@ let erc20ABI = [
 				"internalType": "string",
 				"name": "_symbol",
 				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "_teamAddress",
+				"type": "address"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -557,6 +562,13 @@ let erc20ABI = [
 	},
 	{
 		"inputs": [],
+		"name": "mint",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "name",
 		"outputs": [
 			{
@@ -576,6 +588,19 @@ let erc20ABI = [
 				"internalType": "string",
 				"name": "",
 				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "teamAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -677,7 +702,34 @@ const pairAbi = [
     }
 ];
 
-let contractAddress = "0x6Bf1D5D37c4b0D8Bb4DeDc7d7B9440BC09206643"
+const routerAbi = [
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "WETH",
+        "outputs": [{"name": "", "type": "address"}],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
+const factoryAbi = [
+    {
+        "constant": true,
+        "inputs": [
+            {"name": "", "type": "address"},
+            {"name": "", "type": "address"}
+        ],
+        "name": "getPair",
+        "outputs": [{"name": "", "type": "address"}],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
+let contractAddress = "0xC1FDf4678C684b2e8344057Eb9b37B7113b5d28b"
 let provider;
 
 let signer
@@ -725,7 +777,7 @@ async function GetTeamInfo(teamID) {
         let TeamInfos = [];
         let length = await contract.teamListLength()
         console.log("start")
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < length; i++) {
             console.log(i)
             TeamInfos.push(await GetTeamInfo(i));
         }
@@ -742,9 +794,32 @@ async function GetTeamInfo(teamID) {
         console.log(tokenAddress)
         let symbol = await token.symbol()
         console.log("price")
-        let price = await getTokenPrice(tokenAddress)
-        console.log("price done")
+        let pairToken = await getUniswapPairAddress(tokenAddress)
+        console.log(pairToken)
+		let price;
+		let marketcap
+		let circulatingSupply
+		circulatingSupply = await token.totalSupply()
+		console.log(circulatingSupply)
+		circulatingSupply = ethers.formatUnits(circulatingSupply,18)
+		console.log(circulatingSupply)
 
+
+		try {
+			price = await getTokenPrice(pairToken);
+			marketcap = price*10000000
+			price = "$" + price
+			marketcap = "$" + marketcap
+		
+		} 
+
+		catch (error) {
+			price = "no liquidity";
+			marketcap = "N/A";
+		}
+		
+        console.log("price done")
+        console.log(data)
         const description = data[2];
         const contactLink = data[3];
         const interestInPredictionMarket = data[6] ? "Yes" : "No";
@@ -760,15 +835,19 @@ async function GetTeamInfo(teamID) {
             <td>${teamName}</td>
             <td>${symbol}</td>
             <td>${price}</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            </tr>
+            <td>${marketcap}</td>
+			<td>${circulatingSupply}</td>
+			<td><button onclick="mintToken('${tokenAddress}')">Mint</button></td> <!-- Button 1 with onclick event -->
+			</tr>
         `;
 
         tbody.appendChild(tr);
     }
+	
+	async function mintToken(tokenAddress){
+        let token = new ethers.Contract(tokenAddress, erc20ABI, signer);
+		await token.mint()
+	}
 
     async function addGnosisChainToMetaMask() {
         const chainId = 100;
@@ -804,8 +883,9 @@ async function GetTeamInfo(teamID) {
         
             const teamData = await GetAllTeamInfoToConsole();
             console.log(teamData);
-            for (let i = 0; i < 1; i++){
+            for (let i = 0; i < teamData.length; i++){
                 console.log("populate " + i)
+					console.log(teamData[i])
                     await insertDataIntoTable(teamData[i]);
                 }
         
@@ -827,6 +907,24 @@ async function getTokenPrice(pairAddress) {
     // Calculate the price (assuming token0 is ETH and token1 is the desired token)
     // Price = reserve0 (ETH) / reserve1 (TOKEN)
     return xdaiprice
+}
+
+
+
+async function getUniswapPairAddress(tokenAddress) {
+    const provider = new ethers.JsonRpcProvider('https://rpc.gnosis.gateway.fm'); // Replace with your Infura endpoint or any Ethereum node endpoint
+
+    // Addresses for Uniswap V2 on Mainnet
+    const FACTORY_ADDRESS = '0xA818b4F111Ccac7AA31D0BCc0806d64F2E0737D7';
+    const ROUTER_ADDRESS = '0x1C232F01118CB8B424793ae03F870aa7D0ac7f77';
+
+    const routerContract = new ethers.Contract(ROUTER_ADDRESS, routerAbi, provider);
+    const factoryContract = new ethers.Contract(FACTORY_ADDRESS, factoryAbi, provider);
+
+    const WETH = await routerContract.WETH();
+    const pairAddress = await factoryContract.getPair(tokenAddress, WETH);
+
+    return pairAddress;
 }
 
 document.addEventListener("DOMContentLoaded", function() {
