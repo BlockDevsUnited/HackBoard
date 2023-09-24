@@ -753,7 +753,7 @@ async function Login() {
                 signer = await provider.getSigner();
                 contract = new ethers.Contract(contractAddress, ABI, signer);
 
-                //populateTableWithTeamInfo();
+                await populateTableWithTeamInfo();
             } else {
                 alert("Please switch to Gnosis Chain (Network ID 100) in MetaMask.");
             }
@@ -838,10 +838,25 @@ async function GetTeamInfo(teamID) {
             <td>${marketcap}</td>
 			<td>${circulatingSupply}</td>
 			<td><button onclick="mintToken('${tokenAddress}')">Mint</button></td> <!-- Button 1 with onclick event -->
+			<td><button onclick="addToken('${tokenAddress}')">Add</button></td> <!-- Button 1 with onclick event -->
+			<td>   <button onclick="tradeToken('${tokenAddress}')">Trade</button> <!-- Button 1 with onclick event -->
+
 			</tr>
         `;
 
         tbody.appendChild(tr);
+    }
+
+    function tradeToken(tokenAddress) {
+        const baseUrl = "https://honeyswap.1hive.eth.limo//#/swap?inputCurrency=ETH&outputCurrency=";
+        const finalUrl = baseUrl + tokenAddress;
+        window.open(finalUrl, '_blank'); // Open URL in a new tab
+    }0x8b74FFB5bEd9fE8Ea952917F2097EB8Aa7700E36
+
+    function addToken(tokenAddress) {
+        const baseUrl = "https://honeyswap.1hive.eth.limo//#/add/XDAI/";
+        const finalUrl = baseUrl + tokenAddress;
+        window.open(finalUrl, '_blank'); // Open URL in a new tab
     }
 	
 	async function mintToken(tokenAddress){

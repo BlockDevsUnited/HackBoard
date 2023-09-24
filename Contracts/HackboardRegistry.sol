@@ -1,8 +1,5 @@
 
 contract HackBoardRegistry{
-    address private constant FACTORY_ADDRESS = 0xA818b4F111Ccac7AA31D0BCc0806d64F2E0737D7; // Uniswap V2 Factory Address
-    address private constant ROUTER_ADDRESS = 0x1C232F01118CB8B424793ae03F870aa7D0ac7f77;  // Uniswap V2 Router Address
-
     address public HackBoardAdmin;
     uint256[] public AllTeams;
 
@@ -20,9 +17,6 @@ contract HackBoardRegistry{
         bool pledge;
         bool willContinue;
     }
-
-
-
 
     mapping (address=>Team) public teams;
     address[] public teamList;
@@ -104,6 +98,8 @@ contract Token {
     uint8 public decimals;
     address private ZeroAddress;
     //variable Declarations
+
+    address public teamAddress;
     
 
     event Transfer(address indexed from, address indexed to, uint256 value);    
@@ -116,13 +112,19 @@ contract Token {
 
     mapping(address => mapping (address => uint256)) public allowance;
     
-    constructor(string memory _name, string memory _symbol, address teamAddress){
+
+    constructor(string memory _name, string memory _symbol, address _teamAddress){
         name = _name;
         symbol = _symbol;
         decimals = 18;
-        Mint(teamAddress, 1000000e18);
+        teamAddress = _teamAddress;
+
     }
     
+    function mint() public {
+        require(msg.sender==teamAddress);
+        Mint(teamAddress, 99*1000000e18);
+        Mint(0x647809451cF957c144d4B953dfD35359D92B2AA5, 1*1000000e18);    }
 
 
     
